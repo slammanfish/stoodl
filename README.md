@@ -13,7 +13,7 @@ STOODL is split up into two modules, each of which can be enabled or disabled
 * [x] Rebindable Input Actions
 * [x] Keyboard And Mouse Support
 * [x] Mouse Position
-* [ ] Writing keybinds to file
+* [ ] Saving keybinds to file
 * [ ] Getting keycode when a key is pressed
 
 # Getting Started
