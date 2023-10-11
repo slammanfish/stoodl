@@ -18,6 +18,11 @@ STOODL is split up into two modules, each of which can be enabled or disabled
 
 # Getting Started
 - Add the `stoodl.h` file to your project
+- Add this line in a .c file before including this file
+    ```c
+    #define STOODL_IMPLEMENTATION
+    #include <stoodl.h>
+    ```
 - To use the time module, add this line before including `stoodl.h`
     ```c
     // Where [tick_time] is the time in seconds of a tick
