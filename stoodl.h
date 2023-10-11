@@ -17,6 +17,12 @@
 STOODL (SDL Tools) provides basic input and time handling for games and engines made with SDL.
 STOODL is split up into two modules, each of which can be enabled or disabled
 
+IMPORTANT
+
+Add this line in a .c file before including this file
+    #define STOODL_IMPLEMENTATION
+    #include <stoodl.h>
+
 To use STOODL, call stoodl_init() after initialising SDL, and call stoodl_update() after SDL event handling and before your game logic
 Don't forget to call stdool_free() at the end of your program!
 
@@ -109,20 +115,22 @@ Don't forget to call stdool_free() at the end of your program!
 // Util
 //---------------------------------------------------------------------------------------------------------------
 
-void stoodl_util_str_strip(char *str, char ch);
+    void stoodl_util_str_strip(char *str, char ch);
 
-void stoodl_util_str_strip(char *str, char ch) {
-    int len = strlen(str);
-    int i, j = 0;
+#ifdef STOODL_IMPLEMENTATION
+    inline void stoodl_util_str_strip(char *str, char ch) {
+        int len = strlen(str);
+        int i, j = 0;
 
-    for (i = 0; i < len; i++) {
-        if (str[i] != ch) {
-            str[j] = str[i];
-            j++;
+        for (i = 0; i < len; i++) {
+            if (str[i] != ch) {
+                str[j] = str[i];
+                j++;
+            }
         }
+        str[j] = '\0';
     }
-    str[j] = '\0';
-}
+#endif
 
 //---------------------------------------------------------------------------------------------------------------
 // Time
@@ -142,8 +150,8 @@ void stoodl_util_str_strip(char *str, char ch) {
     double elapsed_time();
     double delta_time();
     int on_tick();
-
-    int stoodl_time_init() {
+#ifdef STOODL_IMPLEMENTATION
+    inline int stoodl_time_init() {
         stoodl_time.program_start = SDL_GetPerformanceCounter();
         stoodl_time.program_current = stoodl_time.program_start;
         stoodl_time.program_last = 0;
@@ -153,7 +161,7 @@ void stoodl_util_str_strip(char *str, char ch) {
         return 1;
     }
 
-    void stoodl_time_update() {
+    inline void stoodl_time_update() {
         // Update time
         stoodl_time.program_last = stoodl_time.program_current;
         stoodl_time.program_current = SDL_GetPerformanceCounter();
@@ -170,24 +178,25 @@ void stoodl_util_str_strip(char *str, char ch) {
         }
     }
 
-    void stoodl_time_free() {
+    inline void stoodl_time_free() {
 
     }
 
-    double elapsed_time() {
+    inline double elapsed_time() {
         return stoodl_time.elapsed;
     }
 
     // Returns delta time
-    double delta_time() {
+    inline double delta_time() {
         return stoodl_time.delta;
     }
 
     // Returns 1 if the game ticked this frame.
     // Tick rate is determined by the definition of the TIME macro
-    int on_tick() {
+    inline int on_tick() {
         return stoodl_time.on_tick;
     }
+#endif
 
 #endif
 
@@ -242,7 +251,8 @@ void stoodl_util_str_strip(char *str, char ch) {
     int is_button_held(char *action);
     int *get_mouse_position();
 
-    static void stoodl_keystate_keyboard_update(unsigned int state, stoodl_key_map *key) {
+#ifdef STOODL_IMPLEMENTATION
+    inline static void stoodl_keystate_keyboard_update(unsigned int state, stoodl_key_map *key) {
         if (state) {
             if (key->state > 0) {
                 key->state = INPUT_STATE_HELD;
@@ -254,7 +264,7 @@ void stoodl_util_str_strip(char *str, char ch) {
         }
     }
 
-    static void stoodl_keystate_mouse_update(unsigned state, stoodl_key_map *key) {
+    inline static void stoodl_keystate_mouse_update(unsigned state, stoodl_key_map *key) {
         if (key->mouse_button != 0) {
             if (state & SDL_BUTTON(key->mouse_button)) {
                 if ((int) key->state > 0) {
@@ -268,7 +278,7 @@ void stoodl_util_str_strip(char *str, char ch) {
         }
     }
 
-    void stoodl_input_read_config() {
+    inline void stoodl_input_read_config() {
         char *keybind_config;
         int keybind_count = 1;
         #ifdef KEYBIND_PATH
@@ -349,11 +359,11 @@ void stoodl_util_str_strip(char *str, char ch) {
         free(keybind_config);
     }
 
-    int stoodl_input_init() {
+    inline int stoodl_input_init() {
         stoodl_input_read_config();
     }
 
-    void stoodl_input_update() {
+    inline void stoodl_input_update() {
         stoodl_input_controller.keyboard_state = SDL_GetKeyboardState(NULL);
         stoodl_input_controller.mouse_state = SDL_GetMouseState(&stoodl_input_controller.mouse_position[0], &stoodl_input_controller.mouse_position[1]);
 
@@ -366,12 +376,12 @@ void stoodl_util_str_strip(char *str, char ch) {
         }
     }
 
-    void stoodl_input_free() {
+    inline void stoodl_input_free() {
         free(stoodl_input_controller.key_maps);
         stoodl_input_controller.key_maps = NULL;
     }
 
-    int is_button_up(char *action) {
+    inline int is_button_up(char *action) {
         for (int i = 0; i < stoodl_input_controller.action_count; i++) {
             if (!strcmp(action, stoodl_input_controller.key_maps[i].action)) {
                 return stoodl_input_controller.key_maps[i].state == INPUT_STATE_UP ? 1 : 0;
@@ -380,7 +390,7 @@ void stoodl_util_str_strip(char *str, char ch) {
         return 0;
     }
 
-    int is_button_pressed(char *action) {
+    inline int is_button_pressed(char *action) {
         for (int i = 0; i < stoodl_input_controller.action_count; i++) {
             if (!strcmp(action, stoodl_input_controller.key_maps[i].action)) {
                 return stoodl_input_controller.key_maps[i].state == INPUT_STATE_PRESSED ? 1 : 0;
@@ -389,7 +399,7 @@ void stoodl_util_str_strip(char *str, char ch) {
         return 0;
     }
 
-    int is_button_held(char *action) {
+    inline int is_button_held(char *action) {
         for (int i = 0; i < stoodl_input_controller.action_count; i++) {
             if (!strcmp(action, stoodl_input_controller.key_maps[i].action)) {
                 return stoodl_input_controller.key_maps[i].state == INPUT_STATE_HELD ? 1 : 0;
@@ -398,9 +408,10 @@ void stoodl_util_str_strip(char *str, char ch) {
         return 0;
     }
 
-    int *get_mouse_position() {
+    inline int *get_mouse_position() {
         return stoodl_input_controller.mouse_position;
     }
+#endif
 
 #endif
 
@@ -408,46 +419,48 @@ void stoodl_util_str_strip(char *str, char ch) {
 // Stoodl
 //---------------------------------------------------------------------------------------------------------------
 
-void stoodl_init();
-void stoodl_update();
-void stoodl_free();
+    void stoodl_init();
+    void stoodl_update();
+    void stoodl_free();
 
-void stoodl_init() {
-    #ifdef TIME
-        if (stoodl_time_init()) {
-            printf("Successfully Initialised STOODL :: Time\n");
-        } else {
-            printf("Failed to Initialise STOODL :: Time\n");
-        }
-    #endif
+#ifdef STOODL_IMPLEMENTATION
+    inline void stoodl_init() {
+        #ifdef TIME
+            if (stoodl_time_init()) {
+                printf("Successfully Initialised STOODL :: Time\n");
+            } else {
+                printf("Failed to Initialise STOODL :: Time\n");
+            }
+        #endif
 
-    #ifdef INPUT
-        if (stoodl_input_init()) {
-            printf("Successfully Initialised STOODL :: Input\n");
-        } else {
-            printf("Failed to Initialise STOODL :: Input\n");
-        }
-    #endif
-}
+        #ifdef INPUT
+            if (stoodl_input_init()) {
+                printf("Successfully Initialised STOODL :: Input\n");
+            } else {
+                printf("Failed to Initialise STOODL :: Input\n");
+            }
+        #endif
+    }
 
-void stoodl_update() {
-    #ifdef TIME
-        stoodl_time_update();
-    #endif
+    inline void stoodl_update() {
+        #ifdef TIME
+            stoodl_time_update();
+        #endif
 
-    #ifdef INPUT
-        stoodl_input_update();
-    #endif
-}
+        #ifdef INPUT
+            stoodl_input_update();
+        #endif
+    }
 
-void stoodl_free() {
-    #ifdef TIME
-        stoodl_time_free();
-    #endif
+    inline void stoodl_free() {
+        #ifdef TIME
+            stoodl_time_free();
+        #endif
 
-    #ifdef INPUT
-        stoodl_input_free();
-    #endif
-}
+        #ifdef INPUT
+            stoodl_input_free();
+        #endif
+    }
+#endif
 
-#endif STOODL_H
+#endif
