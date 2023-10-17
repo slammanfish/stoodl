@@ -65,13 +65,15 @@ Don't forget to call stdool_free() at the end of your program!
             
             - Where [Action] is a string you assign to the [Code]
                 - [Action] can be anything you want. This is how you reference the keybind in your code
-            - Where [Code] is an SDL_ScanCode from this list https://wiki.libsdl.org/SDL2/SDL_Scancode with the exception of mouse buttons
+            - Where [Code] is an SDL_Scancode from this list https://wiki.libsdl.org/SDL2/SDL_Scancode with the exception of mouse buttons
                 - For mouse buttons the Codes are below
                     lmb - Left iMouse Button
                     rmb - Right Mouse Button
                     mmb - Middle Mouse Button
                     mx1 - X Mouse Button 1
                     mx2 - X Mouse Button 2
+            - For SDL_Scancodes with spaces such as "Left Shift", replace any space with an "_"
+                eg "Left Shift" would become "left_shift"
             - ONLY one pair of codes and actions per line
             - DO NOT use uppercase letters
             - DO NOT use spaces. Use '_' or '-' instead
@@ -116,6 +118,7 @@ Don't forget to call stdool_free() at the end of your program!
 //---------------------------------------------------------------------------------------------------------------
 
     void stoodl_util_str_strip(char *str, char ch);
+    int stoodl_replace_char(char *str, char orig, char rep);
 
 #ifdef STOODL_IMPLEMENTATION
     inline void stoodl_util_str_strip(char *str, char ch) {
@@ -129,6 +132,16 @@ Don't forget to call stdool_free() at the end of your program!
             }
         }
         str[j] = '\0';
+    }
+
+    inline int stoodl_replace_char(char *str, char orig, char rep) {
+        char *ix = str;
+        int n = 0;
+        while((ix = strchr(ix, orig)) != NULL) {
+            *ix++ = rep;
+            n++;
+        }
+        return n;
     }
 #endif
 
@@ -150,6 +163,7 @@ Don't forget to call stdool_free() at the end of your program!
     double elapsed_time();
     double delta_time();
     int on_tick();
+    
 #ifdef STOODL_IMPLEMENTATION
     inline int stoodl_time_init() {
         stoodl_time.program_start = SDL_GetPerformanceCounter();
@@ -322,8 +336,7 @@ Don't forget to call stdool_free() at the end of your program!
         while (*start != '\0') {
             char left[128], right[128];
             if (sscanf(start, "%s : %s", left, right) == 2) {
-                stoodl_util_str_strip(left, ' ');
-                stoodl_util_str_strip(right, ' ');
+                stoodl_replace_char(left, '_', ' ');
                 strcpy(stoodl_input_controller.key_maps[i].code, left);
                 strcpy(stoodl_input_controller.key_maps[i].action, right);
                 
