@@ -67,7 +67,7 @@ Don't forget to call stdool_free() at the end of your program!
                 - [Action] can be anything you want. This is how you reference the keybind in your code
             - Where [Code] is an SDL_Scancode from this list https://wiki.libsdl.org/SDL2/SDL_Scancode with the exception of mouse buttons
                 - For mouse buttons the Codes are below
-                    lmb - Left iMouse Button
+                    lmb - Left Mouse Button
                     rmb - Right Mouse Button
                     mmb - Middle Mouse Button
                     mx1 - X Mouse Button 1
@@ -111,6 +111,7 @@ Don't forget to call stdool_free() at the end of your program!
 #define STOODL_H
 
 #include <SDL2/SDL.h>
+#include <stdio.h>
 #include <string.h>
 
 //---------------------------------------------------------------------------------------------------------------
@@ -260,6 +261,9 @@ Don't forget to call stdool_free() at the end of your program!
     int stoodl_input_init();
     void stoodl_input_update();
     void stoodl_input_free();
+    void stoodl_input_reload();
+    void stoodl_input_save_config();
+    char *stoodl_input_get_key_pressed(SDL_Event event);
     int is_button_up(char *action);
     int is_button_pressed(char *action);
     int is_button_held(char *action);
@@ -392,6 +396,65 @@ Don't forget to call stdool_free() at the end of your program!
     inline void stoodl_input_free() {
         free(stoodl_input_controller.key_maps);
         stoodl_input_controller.key_maps = NULL;
+    }
+
+    inline void stoodl_input_reload() {
+        stoodl_input_free();
+        stoodl_input_read_config();
+    }
+
+    inline void stoodl_input_save_config() {
+        #ifdef KEYBIND_PATH
+            FILE *file;
+            file = fopen(KEYBIND_PATH, "w");
+            
+            if (file != NULL) {
+                for (int i = 0; i < stoodl_input_controller.action_count; i++) {
+                    char left[128], right[128];
+                    strcpy(left, stoodl_input_controller.key_maps[i].code);
+                    strcpy(right, stoodl_input_controller.key_maps[i].action);
+                    stoodl_replace_char(left, ' ', '_');
+
+                    char line[256];
+                    sprintf(line, "%s : %s\n", left, right);
+
+                    fputs(line, file);
+                }
+            }
+            fclose(file);
+        #endif
+
+        #ifndef KEYBIND_PATH
+            printf("KEYBIND_PATH must be defined to save keybind config\n");
+        #endif
+    }
+
+    inline char *stoodl_input_get_key_pressed(SDL_Event event) {
+        switch (event.type) {
+            case SDL_KEYDOWN:
+                return SDL_GetScancodeName(event.key.keysym.scancode);
+            break;
+            case SDL_MOUSEBUTTONDOWN:
+                switch (event.button.button) {
+                case SDL_BUTTON_LEFT:
+                    return "lmb";
+                break;
+                case SDL_BUTTON_MIDDLE:
+                    return "mmb";
+                break;
+                case SDL_BUTTON_RIGHT:
+                    return "rmb";
+                break;
+                case SDL_BUTTON_X1:
+                    return "mx1";
+                break;
+                case SDL_BUTTON_X2:
+                    return "mx2";
+                break;
+                }
+            break;
+        }
+        return NULL;
     }
 
     inline int is_button_up(char *action) {
