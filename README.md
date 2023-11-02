@@ -13,8 +13,8 @@ STOODL is split up into two modules, each of which can be enabled or disabled
 * [x] Rebindable Input Actions
 * [x] Keyboard And Mouse Support
 * [x] Mouse Position
-* [ ] Saving keybinds to file
-* [ ] Getting keycode when a key is pressed
+* [x] Saving keybinds to file
+* [x] Getting keycode when a key is pressed (doesn't work with multi command keys eg "shift + /" for "?")
 
 # Getting Started
 - Add the `stoodl.h` file to your project
